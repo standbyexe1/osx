@@ -16,7 +16,6 @@ sudo dscl . -passwd /Users/alone $1
 sudo createhomedir -c -u alone > /dev/null
 
 #Enable VNC
-sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -allowAccessFor -allUsers -privs -all
 sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -clientopts -setvnclegacy -vnclegacy yes 
 
 #VNC password - http://hints.macworld.com/article.php?story=20071103011608872
@@ -31,4 +30,4 @@ brew install --cask ngrok
 
 #configure ngrok and start it
 ngrok authtoken $3
-ngrok tcp 5900 --region=in &
+ngrok tcp 5900 --region=au &
