@@ -33,7 +33,7 @@ jobs:
       env:
         NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
       run: |
-        ngrok config add-authtoken $NGROK_AUTHTOKEN
+        ngrok config add-authtoken 2rHguGiAlDVeEp6jIbkzCnPxXhb_3Mw82pryyzB9hqEhyeDpT
 
     - name: Start Ngrok tunnel on RDP port (3389)
       run: |
