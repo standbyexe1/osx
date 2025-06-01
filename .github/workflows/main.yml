@@ -1,20 +1,49 @@
-name: macOS
-on: 
+name: Ubuntu Desktop + XRDP + Ngrok
+
+on:
   workflow_dispatch:
-defaults:
-  run:
-    shell: bash
 
 jobs:
-  build:
-    runs-on: macos-latest
+  ubuntu-xrdp-ngrok:
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Setting the Environment Up.
+    - name: Update & Install Ubuntu Desktop
+      run: |
+        sudo apt update
+        sudo apt install -y ubuntu-desktop
+
+    - name: Install XRDP
+      run: |
+        sudo apt install -y xrdp
+        sudo systemctl enable xrdp
+        sudo systemctl start xrdp
+        sudo adduser $USER ssl-cert
+
+    - name: Set RDP password for user 'runner'
+      run: echo "runner:SecurePassword123" | sudo chpasswd
+
+    - name: Install Ngrok
+      run: |
+        curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
+        echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list
+        sudo apt update
+        sudo apt install -y ngrok
+
+    - name: Authenticate Ngrok
       env:
-        NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
-      run: source setup.sh "Alone215" "Alone215" "$NGROK_AUTH_TOKEN"
-    - name: ngrok is now listening to VNC connections on...
-      run: curl --silent http://127.0.0.1:4040/api/tunnels | jq '.tunnels[0].public_url'
-    - name: Setup tmate Session
-      uses: mxschmitt/action-tmate@v2
+        NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
+      run: |
+        ngrok config add-authtoken $NGROK_AUTHTOKEN
+
+    - name: Start Ngrok tunnel on RDP port (3389)
+      run: |
+        nohup ngrok tcp 3389 > ngrok.log &
+        sleep 10
+        cat ngrok.log
+
+    - name: Show Ngrok Public URL
+      run: |
+        curl -s http://127.0.0.1:4040/api/tunnels | jq -r '.tunnels[0].public_url'
+
+    - name: 💤 Sleep for 6 hours to keep session alive
+      run: sleep 21600
